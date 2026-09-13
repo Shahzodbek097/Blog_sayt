@@ -1,0 +1,13 @@
+<div class ='pegination'>
+    <span class="step-links">
+        {% if page.has_previous %}
+        <a href="?page={{ page.previos_page_number}}"> Avvalgi </a>
+        {% endif %}
+        <span class="current">
+            Page {{ page.number }} of {{ page.peginator.num.pages }}
+        </span>
+        {% if page.has_next %}
+            <a href="?page={{ page.next_page_number}}"> Keyingi </a>
+        {% endif %}
+    </span>
+</div>
