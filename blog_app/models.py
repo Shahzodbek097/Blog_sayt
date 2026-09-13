@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-class PublishManager(models.Manager)
+class PublishManager(models.Manager):
     def get_queryset(self):
         return super(PublishManager, self).get_queryset().filter(status='published')
 
