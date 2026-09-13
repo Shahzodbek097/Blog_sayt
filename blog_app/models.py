@@ -1,48 +1,38 @@
 from django.db import models
+from django.contrib.auth.models import User
 from django.utils import timezone
-from django.utils.text import slugify
 
-
-# Create your models here.
-
-class Avtor(models.Model):
-    ism=models.CharField(max_length=10,blank=True,null=True)
-    yosh=models.SmallIntegerField()
-    link=models.URLField(null=True)
-
-    def __str__(self):
-        return self.ism
-
-class Janri(models.Model):
-    janr_nomi=models.CharField(max_length=10)
-
-    def __str__(self):
-        return self.janr_nomi
-
-
-class Kitoblar(models.Model):
-    nomi=models.CharField(max_length=15)
-    avtor=models.ForeignKey(Avtor,null=True,on_delete=models.CASCADE)
-    janr=models.ForeignKey(Janri,null=True,on_delete=models.SET_NULL)
-
-    def __str__(self):
-        return self.nomi
+class PublishManager(models.Manager)
+    def get_queryset(self):
+        return super(PublishManager, self).get_queryset().filter(status='published')
 
 class Post(models.Model):
-    sarlavha=models.CharField(max_length=100)
-    slag=models.SlugField(max_length=255,default=True,blank=True,null=True)
-    matni=models.TextField()
-    avtor=models.ForeignKey(Avtor,null=True,on_delete=models.CASCADE)
-    chop_etish_sana=models.DateTimeField(default=timezone.now)  #Admin panelda ko'rsatadi, hozirgi vaqt va o'zgartirsa bo'ladi
-    yaratish_sana=models.DateTimeField(auto_now_add=True)       #Adminda ko'rinmaydi, yaratilgan vaqt va o'zgartirib bo'lmaydi
-    ozgarish_sana=models.DateTimeField(auto_now=True)           #Adminda ko'rinmaydi, o'zgartirilgan vaqt va o'zgartirib bo'lmaydi
+    STATUS_CHOIS=(
+        ('draft', 'Draft'),
+        ('published', 'Published')
+    )
+
+    title=models.CharField(max_length=255)
+    slug=models.SlugField(max_length=255, unique_for_date="publish")
+    author=models.ForeignKey(User, on_delete=models.CASCADE,related_name="blog_posts")
+    body=models.TextField()
+    publish=models.DateTimeField(default=timezone.now)
+    created=models.DateTimeField(auto_now_add=True)
+    update=models.DateTimeField(auto_now=True)
+    status=models.CharField(max_length=10, choices=STATUS_CHOIS, default='draft')
+
+    class Meta:
+        ordering=('-publish',)
 
     def __str__(self):
-        return self.sarlavha
+        return self.title
 
-    def saqlash(self,*args,**kwargs):
-        if not self.slag:
-            self.slag=slugify(self.sarlavha)
-        super().save(*args,**kwargs)
+    objects=models.Manager()
+    published=PublishManager
+
+posts=Post.objects.all()
+pposts=Post.published.all()
+
+
 
 
